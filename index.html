@@ -1,0 +1,395 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>DickDollar</title>
+<style>
+:root {
+  --bg: #ffffff;
+  --surface: #f3f4f6;
+  --line: #d9dce1;
+  --fg: #14181f;
+  --muted: #5f6672;
+  --accent: #1f4fd8;
+  --accent-fg: #ffffff;
+  --neg: #b42318;
+  --pos: #067647;
+  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #101216; --surface: #1a1d23; --line: #2d323b; --fg: #eceef2; --muted: #98a0ad;
+    --accent: #6c93ff; --accent-fg: #0b0f1a; --neg: #f97066; --pos: #47cd89;
+  }
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { height: 100%; margin: 0; }
+body {
+  background: var(--bg); color: var(--fg); font-family: var(--font); font-size: 16px; line-height: 1.4;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-top: env(safe-area-inset-top, 0px);
+}
+.app { max-width: 480px; margin: 0 auto; min-height: 100%; display: flex; flex-direction: column; }
+
+header { display: flex; align-items: center; height: 56px; border-bottom: 1px solid var(--line); }
+header img { height: 28px; width: auto; max-width: 160px; display: block; }
+header .word { font-weight: 700; font-size: 18px; letter-spacing: -0.01em; }
+
+main { flex: 1; padding-block: 20px 96px; }
+
+h1 { font-size: 13px; font-weight: 600; color: var(--muted); margin: 0 0 6px; text-transform: uppercase; letter-spacing: 0.06em; }
+h2 { font-size: 13px; font-weight: 600; color: var(--muted); margin: 28px 0 8px; text-transform: uppercase; letter-spacing: 0.06em; }
+.balance { font-size: 40px; font-weight: 700; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.balance small { font-size: 18px; font-weight: 600; color: var(--muted); margin-left: 4px; letter-spacing: 0; }
+
+label { display: block; font-size: 14px; font-weight: 600; margin: 16px 0 6px; }
+input {
+  width: 100%; height: 44px; padding: 0 12px; font: inherit; color: var(--fg); background: var(--bg);
+  border: 1px solid var(--line); border-radius: 4px; appearance: none; -webkit-appearance: none;
+}
+input:focus-visible, button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+input::placeholder { color: var(--muted); opacity: 0.8; }
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; height: 44px; padding: 0 18px;
+  font: inherit; font-weight: 600; border-radius: 4px; border: 1px solid var(--line); background: var(--bg);
+  color: var(--fg); cursor: pointer;
+}
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-fg); }
+.btn.block { width: 100%; margin-top: 22px; }
+.btn:active { opacity: 0.85; }
+.link { border: 0; background: none; padding: 0; font: inherit; font-weight: 600; color: var(--accent); cursor: pointer; }
+
+.chips { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+.chips .btn { height: 36px; padding: 0 14px; font-variant-numeric: tabular-nums; }
+.row { display: flex; gap: 8px; }
+.row input { flex: 1; min-width: 0; }
+
+.list { border-top: 1px solid var(--line); }
+.item { display: flex; justify-content: space-between; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+.item .l { min-width: 0; }
+.item .t { font-weight: 600; overflow-wrap: anywhere; }
+.item .s { font-size: 13px; color: var(--muted); overflow-wrap: anywhere; }
+.item .amt { font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.neg { color: var(--neg); } .pos { color: var(--pos); }
+.empty { color: var(--muted); padding: 16px 0; border-bottom: 1px solid var(--line); }
+
+.msg { margin-top: 14px; font-size: 14px; color: var(--neg); }
+.note { font-size: 14px; color: var(--muted); margin-top: 8px; }
+textarea {
+  width: 100%; padding: 10px 12px; font: 14px/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color: var(--fg);
+  background: var(--surface); border: 1px solid var(--line); border-radius: 4px; resize: vertical; overflow-wrap: anywhere;
+}
+textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.ok { margin-top: 14px; font-size: 14px; color: var(--pos); font-weight: 600; }
+.mini { height: 30px; padding: 0 10px; font-size: 13px; margin-top: 6px; }
+
+dl.receipt { margin: 16px 0 0; border-top: 1px solid var(--line); }
+dl.receipt div { display: flex; justify-content: space-between; gap: 16px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+dl.receipt dt { color: var(--muted); }
+dl.receipt dd { margin: 0; font-weight: 600; text-align: right; overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
+.status { font-size: 22px; font-weight: 700; margin: 4px 0 0; }
+
+nav {
+  position: fixed; left: 0; right: 0; bottom: 0; background: var(--bg); border-top: 1px solid var(--line);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+nav .in { max-width: 480px; margin: 0 auto; display: flex; }
+nav a { flex: 1; text-align: center; padding: 16px 0; font-size: 14px; font-weight: 600; color: var(--muted); text-decoration: none; border-top: 2px solid transparent; margin-top: -1px; }
+nav a[aria-current="page"] { color: var(--fg); border-top-color: var(--accent); }
+</style>
+</head>
+<body>
+<div class="app">
+  <header id="top"></header>
+
+  <main>
+    <section id="wallet">
+      <h1>Balance</h1>
+      <div class="balance"><span id="bal">0</span><small>CC</small></div>
+
+      <h2>Add cumcoins</h2>
+      <label for="mint-amt" style="margin-top:0">Amount</label>
+      <div class="row">
+        <input id="mint-amt" type="number" inputmode="numeric" min="1" step="1" placeholder="0">
+        <button class="btn primary" id="mint-btn" type="button">Add</button>
+      </div>
+      <div class="chips">
+        <button class="btn" type="button" data-add="10">+10</button>
+        <button class="btn" type="button" data-add="100">+100</button>
+        <button class="btn" type="button" data-add="1000">+1,000</button>
+        <button class="btn" type="button" data-add="1000000">+1,000,000</button>
+      </div>
+      <div class="msg" id="mint-err" role="alert" hidden></div>
+      <p class="note">There is no limit on how many you can add.</p>
+
+      <h2>Recent</h2>
+      <div class="list" id="recent"></div>
+    </section>
+
+    <section id="pay" hidden>
+      <div id="pay-form">
+        <h1>Send payment</h1>
+        <form id="form" novalidate>
+          <label for="from" style="margin-top:0">Your name</label>
+          <input id="from" type="text" autocomplete="off" maxlength="30" placeholder="So they know who it is from">
+          <label for="to">To</label>
+          <input id="to" type="text" autocomplete="off" maxlength="40" placeholder="Name or username">
+          <label for="amt">Amount (CC)</label>
+          <input id="amt" type="number" inputmode="numeric" min="1" step="1" placeholder="0">
+          <label for="memo">Note (optional)</label>
+          <input id="memo" type="text" autocomplete="off" maxlength="80" placeholder="What is it for">
+          <div class="msg" id="err" role="alert" hidden></div>
+          <button class="btn primary block" type="submit">Send</button>
+        </form>
+        <p class="note">Available: <span id="avail">0</span> CC</p>
+      </div>
+
+      <div id="pay-done" hidden>
+        <h1>Payment</h1>
+        <p class="status">Sent</p>
+        <dl class="receipt" id="receipt"></dl>
+        <label for="code-out">Payment code</label>
+        <textarea id="code-out" rows="4" readonly></textarea>
+        <button class="btn" id="copy-code" type="button" style="margin-top:8px">Copy code</button>
+        <p class="note" id="copy-note">Send this code to the person you paid. They paste it on the Receive tab to get the cumcoins.</p>
+        <button class="btn primary block" id="again" type="button">Done</button>
+      </div>
+    </section>
+
+    <section id="receive" hidden>
+      <h1>Receive payment</h1>
+      <label for="code-in" style="margin-top:0">Payment code</label>
+      <textarea id="code-in" rows="4" placeholder="Paste the code you were sent" spellcheck="false" autocapitalize="off" autocorrect="off"></textarea>
+      <div class="msg" id="rx-err" role="alert" hidden></div>
+      <div class="ok" id="rx-ok" role="status" hidden></div>
+      <button class="btn primary block" id="claim" type="button">Receive</button>
+      <p class="note">Each code can be used once on this device.</p>
+    </section>
+
+    <section id="activity" hidden>
+      <h1>Activity</h1>
+      <div class="list" id="all"></div>
+      <p style="margin-top:20px"><button class="link" id="reset" type="button">Reset wallet</button></p>
+    </section>
+  </main>
+
+  <nav aria-label="Main">
+    <div class="in">
+      <a href="#wallet" data-tab="wallet">Wallet</a>
+      <a href="#pay" data-tab="pay">Pay</a>
+      <a href="#receive" data-tab="receive">Receive</a>
+      <a href="#activity" data-tab="activity">Activity</a>
+    </div>
+  </nav>
+</div>
+
+<script>
+/* Logo: drop a file named logo.png next to index.html. If it is missing, the text name shows instead. */
+var LOGO_SRC = "logo.png";
+var APP_NAME = "DickDollar";
+var UNIT = "CC";
+var MAX_AMT = 1e15;
+var KEY = "dickdollar.v1";
+var state;
+
+function el(id) { return document.getElementById(id); }
+function esc(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : String(s); return d.innerHTML; }
+function fmt(n) { return Number(n).toLocaleString("en-US"); }
+function when(t) { return new Date(t).toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }); }
+function ref() {
+  var c = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789", s = "";
+  for (var i = 0; i < 8; i++) s += c[Math.floor(Math.random() * c.length)];
+  return s;
+}
+
+function fresh() {
+  return { balance: 100, name: "", claimed: [], tx: [{ id: ref(), kind: "in", label: "Welcome balance", amount: 100, at: Date.now() }] };
+}
+function load() {
+  try {
+    var s = JSON.parse(localStorage.getItem(KEY));
+    if (s && typeof s.balance === "number" && Array.isArray(s.tx)) {
+      s.claimed = Array.isArray(s.claimed) ? s.claimed : [];
+      s.name = typeof s.name === "string" ? s.name : "";
+      return s;
+    }
+  } catch (e) {}
+  return fresh();
+}
+
+/* Payment codes look like DD1-<data>-<checksum>. The checksum only catches typos, it is not security. */
+function hash(s) { var h = 5381; for (var i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0; return (h >>> 0).toString(36); }
+function encodeCode(o) {
+  var b = btoa(unescape(encodeURIComponent(JSON.stringify(o)))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  return "DD1-" + b + "-" + hash(b);
+}
+function decodeCode(code) {
+  var m = /^DD1-([A-Za-z0-9_-]+)-([a-z0-9]+)$/.exec(String(code).replace(/\s+/g, ""));
+  if (!m || hash(m[1]) !== m[2]) return null;
+  try {
+    var b = m[1].replace(/-/g, "+").replace(/_/g, "/");
+    while (b.length % 4) b += "=";
+    var o = JSON.parse(decodeURIComponent(escape(atob(b))));
+    var a = Number(o && o.amt);
+    if (!o || typeof o.id !== "string" || !(a >= 1) || a > MAX_AMT) return null;
+    return o;
+  } catch (e) { return null; }
+}
+function copyText(text, area, note) {
+  var orig = note.textContent;
+  function fallback() { if (area) { area.focus(); area.select(); note.textContent = "Press and hold the code to copy it."; } else { window.prompt("Copy this code", text); } }
+  try {
+    navigator.clipboard.writeText(text).then(function () {
+      note.textContent = "Copied."; setTimeout(function () { note.textContent = orig; }, 2000);
+    }, fallback);
+  } catch (e) { fallback(); }
+}
+function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
+
+function renderTop() {
+  var h = el("top");
+  var word = '<span class="word">' + esc(APP_NAME) + '</span>';
+  h.innerHTML = word;
+  if (LOGO_SRC) {
+    var img = new Image();
+    img.alt = APP_NAME;
+    img.onload = function () { h.innerHTML = ""; h.appendChild(img); };
+    img.src = LOGO_SRC;
+  }
+}
+
+function itemHtml(t) {
+  var out = t.kind === "out";
+  return '<div class="item"><div class="l"><div class="t">' + esc(t.label) + '</div><div class="s">' +
+    esc(when(t.at) + " · " + t.id + (t.memo ? " · " + t.memo : "")) +
+    '</div>' + (out && t.code ? '<button class="btn mini" type="button" data-code="' + t.id + '">Copy code</button>' : '') +
+    '</div><div class="amt ' + (out ? "neg" : "pos") + '">' + (out ? "−" : "+") + fmt(t.amount) + " " + UNIT + "</div></div>";
+}
+
+function render() {
+  el("bal").textContent = fmt(state.balance);
+  el("avail").textContent = fmt(state.balance);
+  var list = state.tx.slice().sort(function (a, b) { return b.at - a.at; });
+  var empty = '<div class="empty">No activity yet.</div>';
+  el("recent").innerHTML = list.length ? list.slice(0, 3).map(itemHtml).join("") : empty;
+  el("all").innerHTML = list.length ? list.map(itemHtml).join("") : empty;
+}
+
+/* Tabs */
+var TABS = ["wallet", "pay", "receive", "activity"];
+function route() {
+  var h = (location.hash || "").replace("#", "");
+  if (TABS.indexOf(h) < 0) h = "wallet";
+  TABS.forEach(function (t) {
+    el(t).hidden = t !== h;
+    var a = document.querySelector('[data-tab="' + t + '"]');
+    if (t === h) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
+  });
+  if (h === "pay" && !el("pay-done").hidden) showForm();
+  window.scrollTo(0, 0);
+}
+window.addEventListener("hashchange", route);
+
+/* Add cumcoins */
+function mint(n) {
+  var box = el("mint-err"); box.hidden = true;
+  n = Math.floor(Number(n));
+  if (!isFinite(n) || n < 1) { box.textContent = "Enter a whole amount of at least 1."; box.hidden = false; return false; }
+  if (n > MAX_AMT) { box.textContent = "That is more than the app can count."; box.hidden = false; return false; }
+  state.balance += n;
+  state.tx.push({ id: ref(), kind: "in", label: "Added cumcoins", amount: n, at: Date.now() });
+  save(); render();
+  return true;
+}
+el("mint-btn").addEventListener("click", function () { if (mint(el("mint-amt").value)) el("mint-amt").value = ""; });
+el("mint-amt").addEventListener("keydown", function (e) { if (e.key === "Enter") el("mint-btn").click(); });
+document.querySelectorAll("[data-add]").forEach(function (b) {
+  b.addEventListener("click", function () { mint(b.getAttribute("data-add")); });
+});
+
+/* Pay */
+function showForm() { el("pay-form").hidden = false; el("pay-done").hidden = true; }
+function setErr(t) { var e = el("err"); if (t) { e.textContent = t; e.hidden = false; } else { e.hidden = true; } }
+
+el("form").addEventListener("submit", function (ev) {
+  ev.preventDefault();
+  var from = el("from").value.trim();
+  var to = el("to").value.trim();
+  var amt = Math.floor(Number(el("amt").value));
+  var memo = el("memo").value.trim();
+  if (!from) return setErr("Enter your name so the recipient knows who paid them.");
+  if (!to) return setErr("Enter who you are paying.");
+  if (!isFinite(amt) || amt < 1) return setErr("Enter a whole amount of at least 1 CC.");
+  if (amt > state.balance) return setErr("You have " + fmt(state.balance) + " CC. Add cumcoins on the Wallet tab to continue.");
+  setErr("");
+  var t = { id: ref(), kind: "out", label: "To " + to, memo: memo, amount: amt, at: Date.now() };
+  t.code = encodeCode({ id: t.id, from: from, to: to, amt: amt, memo: memo, at: t.at });
+  state.name = from;
+  state.balance -= amt; state.tx.push(t); save(); render();
+  el("code-out").value = t.code;
+  el("receipt").innerHTML =
+    "<div><dt>To</dt><dd>" + esc(to) + "</dd></div>" +
+    "<div><dt>Amount</dt><dd>" + fmt(amt) + " " + UNIT + "</dd></div>" +
+    (memo ? "<div><dt>Note</dt><dd>" + esc(memo) + "</dd></div>" : "") +
+    "<div><dt>Date</dt><dd>" + esc(when(t.at)) + "</dd></div>" +
+    "<div><dt>Reference</dt><dd>" + t.id + "</dd></div>" +
+    "<div><dt>New balance</dt><dd>" + fmt(state.balance) + " " + UNIT + "</dd></div>";
+  el("pay-form").hidden = true; el("pay-done").hidden = false;
+  window.scrollTo(0, 0);
+});
+el("again").addEventListener("click", function () {
+  el("form").reset(); setErr(""); showForm(); location.hash = "#wallet";
+});
+
+el("copy-code").addEventListener("click", function () { copyText(el("code-out").value, el("code-out"), el("copy-note")); });
+el("code-out").addEventListener("focus", function () { this.select(); });
+
+/* Receive */
+el("claim").addEventListener("click", function () {
+  var err = el("rx-err"), ok = el("rx-ok");
+  err.hidden = true; ok.hidden = true;
+  var raw = el("code-in").value.trim();
+  if (!raw) { err.textContent = "Paste a payment code first."; err.hidden = false; return; }
+  var o = decodeCode(raw);
+  if (!o) { err.textContent = "That code is not valid. Check that you copied all of it."; err.hidden = false; return; }
+  if (state.claimed.indexOf(o.id) >= 0) { err.textContent = "That code was already used on this device."; err.hidden = false; return; }
+  var amt = Math.floor(Number(o.amt));
+  var who = o.from ? String(o.from) : "unknown";
+  state.claimed.push(o.id);
+  state.balance += amt;
+  state.tx.push({ id: o.id, kind: "in", label: "From " + who, memo: o.memo ? String(o.memo) : "", amount: amt, at: Date.now() });
+  save(); render();
+  el("code-in").value = "";
+  ok.textContent = "Received " + fmt(amt) + " " + UNIT + " from " + who + ".";
+  ok.hidden = false;
+});
+
+/* Activity: copy the code again for a payment you sent */
+el("all").addEventListener("click", function (e) {
+  var b = e.target.closest("[data-code]");
+  if (!b) return;
+  var t = state.tx.filter(function (x) { return x.id === b.getAttribute("data-code"); })[0];
+  if (!t || !t.code) return;
+  var holder = { textContent: "" };
+  try { navigator.clipboard.writeText(t.code).then(function () { b.textContent = "Copied"; }, function () { window.prompt("Copy this code", t.code); }); }
+  catch (er) { window.prompt("Copy this code", t.code); }
+});
+
+/* Reset */
+el("reset").addEventListener("click", function () {
+  if (!window.confirm("Erase your balance and history?")) return;
+  state = fresh(); save(); render();
+});
+
+state = load();
+el("from").value = state.name;
+renderTop(); render(); route();
+</script>
+</body>
+</html>
